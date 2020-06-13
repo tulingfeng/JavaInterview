@@ -1931,3 +1931,64 @@ select * from table1 where name = 'tutu'
 name字段的索引B+树里唯一的数据页中，存放页号、最小name字段值和最小name字段值对应的主键值(因为最小name字段值可能一样，需要根据主键去判断一下)
 ```
 
+
+
+## 72.一个表里是不是索引搞得越多越好？
+
+在`MySQL`中建立一些字段对应的索引，优缺点如下：
+
+```text
+优点：
+可以根据某个字段的索引B+树来查找数据，不需要全表搜索，性能提升很高
+
+缺点：
+1）空间上，创建很多索引，必然有很多颗索引B+树，每一颗B+树都要占用很多的磁盘空间，很耗磁盘空间
+2）时间上，进行增删改查的时候，每次都需要维护各个索引的数据有序性，维护这个有序性可能需要数据页不断分裂、增加新的索引页，过程是比较耗费时间的。
+```
+
+
+
+## 73.深入理解联合索引查询原理以及全值匹配规则
+
+![image-20200611001539978](/Users/tulingfeng/Library/Application Support/typora-user-images/image-20200611001539978.png)
+
+针对班级+学生姓名+科目名创建联合索引。
+
+```text
+select * from student_score where class_name = '1班' and student_name='张小强' and subject_name='数学'
+
+查询过程：
+先从索引页中去找，索引页里有多个数据页的最小值记录，直接在索引页中基于二分查找法来找
+按1班这个值去找，找到几条数据，再按照张小强姓名去二分查找，载按照科目名称数学来二分查找。
+```
+
+
+
+## 74.几个最常见和最基本的索引使用规则
+
+```text
+1.等值匹配 where =
+2.最左侧列匹配
+KEY(class_name,student_name,subject_name)按照最左侧的部分字段来查
+(A，B，C) A B 可以，A C C不可以，C 不可以
+3.最左前缀匹配原则
+like 'xiaohong%' 可以 like '%xiaohong'不行
+4.范围查找
+select * from studnet_score where class_name > '1班' and class_name < '5班' 可以用
+但是后面再加student_name 没法用索引
+5.等值匹配+范围匹配
+select * from studnet_score where class_name='1班' and studnet_name > 'xxx' and subject_name < ''
+studnet_name可以用索引 subject_name不能用
+```
+
+
+
+## 75.当我们在SQL里进行排序的时候，如何才能使用索引？
+
+```text
+select * from table where xxx=xxx order by xx1,xx2,xx3 limit 100
+多个字段排序，会将数据先放到临时磁盘文件中，再排序用limit找到指定分页的数据，SQL速度很慢
+
+所以一般建立一个INDEX(xx1,xx2,xx3)的联合索引，默认就是按照xx1,xx2,xx3排序，但是注意是升序排序，如果要改成降序的话，使用order by xx1 DESC,xx2 DESC,xx3 DESC
+```
+

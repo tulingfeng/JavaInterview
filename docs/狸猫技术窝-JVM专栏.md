@@ -2307,7 +2307,7 @@ message Request {
 
 1.内存各个部分的划分
 
-![image-20200329223346465](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200329223346465.png)
+![image-20200329223346465](../pics/image-20200329223346465.png)
 
 JVM内存模型一般分为：
 
@@ -2415,7 +2415,7 @@ Roots对象建立引用关系则判断为可回收对象
 
 
 
-![image-20200404213148111](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200404213148111.png)
+![image-20200404213148111](../pics/image-20200404213148111.png)
 
 ```java
 public class Kafka {
@@ -2429,23 +2429,23 @@ public class ReplicaManager {
 // 方法的局部变量和类的静态变量是GC Roots。但是类的实例变量不是GC Roots
 ```
 
-![image-20200404213654583](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200404213654583.png)
+![image-20200404213654583](../pics/image-20200404213654583.png)
 
 2.并发标记，这个阶段会让系统线程可以随意创建各种新对象，继续运行。主要标记，标记全部对象。（最耗时）
 
 `ReplicaFetcher`对象是被`GC Roots`间接引用，此时不需要回收他。
 
-![image-20200404222609147](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200404222609147.png)
+![image-20200404222609147](../pics/image-20200404222609147.png)
 
 3.重新标记，重新标记下在第二阶段里新创建的一些对象，还有一些已有对象可能失去引用变成垃圾的情况。
 
 速度很快。只是对第二阶段中被系统程序运行变动过的少数对象进行标记，所以运行速度很快。
 
-![image-20200404223420768](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200404223420768.png)
+![image-20200404223420768](../pics/image-20200404223420768.png)
 
 4.并发清理，让系统程序随意运行，然后他来清理之前标记为垃圾的对象即可。
 
-![image-20200404223725235](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200404223725235.png)
+![image-20200404223725235](../pics/image-20200404223725235.png)
 
 **G1**
 
@@ -2455,13 +2455,13 @@ public class ReplicaManager {
 新生代和老年代各自的内存区域不停的变动，由G1自动控制。
 ```
 
-![image-20200405095347089](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200405095347089.png)
+![image-20200405095347089](../pics/image-20200405095347089.png)
 
 ```text
 3.可以设置一个垃圾回收的预期停顿时间
 ```
 
-![image-20200405095440264](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200405095440264.png)
+![image-20200405095440264](../pics/image-20200405095440264.png)
 
 G1通过把内存拆分为大量小`Region`，以及追踪每个`Region`可以回收的对象大小和预估时间，在垃圾回收时，尽量少时间回收更多垃圾。如上图中`200ms 20M`。
 
@@ -2488,7 +2488,7 @@ public class ReplciaManager {
 
 选择部分`Region`进行回收，因为必须让垃圾回收的停顿时间控制在我们的指定范围内。
 
-![image-20200405113530643](/Users/tulingfeng/Library/Application%20Support/typora-user-images/image-20200405113530643.png)
+![image-20200405113530643](../pics/image-20200405113530643.png)
 
 关于需要回收哪些`Region`：会从新生代、老年代、大对象里各自挑选一些`Region`，保证用指定的时间（比如说200ms）回收尽可能多的垃圾，这就是混合回收。
 
